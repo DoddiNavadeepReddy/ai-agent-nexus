@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus - AI Task Agent</title>
+    <meta name="description" content="A premium AI agent that helps you manage tasks, write code, and boost productivity.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background decorative elements -->
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+
+        <!-- Left Sidebar: Chat History -->
+        <aside class="sidebar left-sidebar glass-panel">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-bolt text-gradient"></i>
+                    <h2>Nexus</h2>
+                </div>
+                <button id="new-chat-btn" class="icon-btn" title="New Chat">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <h3 class="section-title">Recent Chats</h3>
+                <ul class="chat-history-list" id="chat-history-list">
+                    <!-- History items will be injected here -->
+                    <li class="history-item active">
+                        <i class="fa-regular fa-message"></i>
+                        <span>Current Session</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="settings-btn" class="nav-btn">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <div class="chat-header glass-panel">
+                <button id="mobile-menu-btn" class="icon-btn mobile-only">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="model-selector">
+                    <span id="current-model">Gemini 1.5 Pro</span>
+                    <i class="fa-solid fa-chevron-down text-muted"></i>
+                </div>
+                <button id="mobile-tasks-btn" class="icon-btn mobile-only">
+                    <i class="fa-solid fa-list-check"></i>
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome State -->
+                <div class="welcome-container" id="welcome-container">
+                    <div class="welcome-logo">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h1 class="welcome-title">How can I help you today?</h1>
+                    <p class="welcome-subtitle">I can write code, plan your week, or extract tasks from our conversation.</p>
+                    
+                    <div class="suggestion-cards">
+                        <div class="suggestion-card" data-prompt="Help me plan my week. Create a list of tasks for learning Next.js.">
+                            <i class="fa-solid fa-calendar-week"></i>
+                            <h4>Plan my week</h4>
+                            <p>Create a learning schedule</p>
+                        </div>
+                        <div class="suggestion-card" data-prompt="Write a Python script to scrape a website and save data to CSV.">
+                            <i class="fa-solid fa-code"></i>
+                            <h4>Write a script</h4>
+                            <p>Python web scraper</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages will be injected here -->
+            </div>
+
+            <div class="chat-input-container glass-panel">
+                <form id="chat-form" class="chat-form">
+                    <button type="button" class="icon-btn attach-btn" title="Attach file">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    <textarea 
+                        id="message-input" 
+                        placeholder="Message Nexus... Use 'Task: [description]' to explicitly add tasks." 
+                        rows="1"
+                        autofocus
+                    ></textarea>
+                    <button type="submit" id="send-btn" class="send-btn" disabled>
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </form>
+                <div class="disclaimer">Nexus can make mistakes. Check important info.</div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Task Panel -->
+        <aside class="sidebar right-sidebar glass-panel" id="task-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fa-solid fa-list-check text-gradient"></i> Action Items</h3>
+                <span class="task-count" id="task-count">0</span>
+            </div>
+            
+            <div class="task-input-quick">
+                <input type="text" id="quick-task-input" placeholder="Add task quickly...">
+                <button id="add-task-btn"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <div class="sidebar-content task-list-container">
+                <ul class="task-list" id="task-list">
+                    <!-- Tasks will be injected here -->
+                    <div class="empty-tasks">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <p>No tasks yet. I'll extract action items from our chat automatically.</p>
+                    </div>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="icon-btn close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="ai-provider">AI Provider</label>
+                    <select id="ai-provider" class="glass-input">
+                        <option value="demo">Demo / Mock Mode (No Key Needed)</option>
+                        <option value="gemini">Google Gemini API</option>
+                        <option value="openai">OpenAI API</option>
+                    </select>
+                </div>
+                
+                <div class="setting-group" id="api-key-group" style="display: none;">
+                    <label for="api-key">API Key</label>
+                    <input type="password" id="api-key" class="glass-input" placeholder="Enter your API key...">
+                    <small class="help-text">Your key is stored locally in your browser and never sent to our servers.</small>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Theme Color</label>
+                    <div class="theme-colors">
+                        <button class="color-btn active" data-color="blue" style="--btn-color: #3b82f6;"></button>
+                        <button class="color-btn" data-color="purple" style="--btn-color: #8b5cf6;"></button>
+                        <button class="color-btn" data-color="emerald" style="--btn-color: #10b981;"></button>
+                        <button class="color-btn" data-color="rose" style="--btn-color: #f43f5e;"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="primary-btn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
